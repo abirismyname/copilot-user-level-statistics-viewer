@@ -32,6 +32,7 @@ export default function FeatureAdoptionChart({ data }: FeatureAdoptionChartProps
     { name: 'Ask Mode', count: data?.askModeUsers || 0, color: chartColors.purple.solid, description: 'Users who used chat ask mode' },
     { name: 'Edit Mode', count: data?.editModeUsers || 0, color: chartColors.amber.solid, description: 'Users who used chat edit mode' },
     { name: 'IDE Agent Mode', count: data?.agentModeUsers || 0, color: chartColors.red.solid, description: 'Users who used Agent Mode in the IDE' },
+    { name: 'Plan Mode', count: data?.planModeUsers || 0, color: chartColors.indigo.solid, description: 'Users who used Plan Mode' },
     { name: 'Copilot CLI', count: data?.cliUsers || 0, color: chartColors.pink.solid, description: 'Users who used Copilot CLI' },
     { name: 'Inline Chat', count: data?.inlineModeUsers || 0, color: chartColors.violet.solid, description: 'Users who used inline chat' },
     { name: 'Code Review', count: data?.codeReviewUsers || 0, color: chartColors.teal.solid, description: 'Users who used code review features' },
