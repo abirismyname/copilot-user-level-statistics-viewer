@@ -8,6 +8,9 @@
     "build:worker": "node scripts/build-worker.mjs",
     "start": "next start",
     "lint": "eslint .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
     "update:plugins": "node --experimental-strip-types data-utils/update-plugin-versions.ts"
   },
   "dependencies": {
@@ -25,12 +28,17 @@
     "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",
+    "@vitest/ui": "^4.0.18",
     "esbuild": "^0.27.3",
     "eslint": "^10.0.2",
     "eslint-config-next": "^16.1.6",
     "playwright": "^1.58.2",
     "tailwindcss": "^4.1.18",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }
