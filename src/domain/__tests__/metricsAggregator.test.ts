@@ -1,0 +1,292 @@
+import { describe, it, expect } from 'vitest';
+import { aggregateMetrics } from '../metricsAggregator';
+import type { CopilotMetrics } from '../../types/metrics';
+
+describe('metricsAggregator', () => {
+  const createBasicMetric = (overrides: Partial<CopilotMetrics> = {}): CopilotMetrics => ({
+    report_start_day: '2024-01-01',
+    report_end_day: '2024-01-31',
+    day: '2024-01-15',
+    enterprise_id: 'test-enterprise',
+    user_id: 123,
+    user_login: 'testuser',
+    user_initiated_interaction_count: 10,
+    code_generation_activity_count: 5,
+    code_acceptance_activity_count: 3,
+    loc_added_sum: 100,
+    loc_deleted_sum: 20,
+    loc_suggested_to_add_sum: 150,
+    loc_suggested_to_delete_sum: 30,
+    totals_by_ide: [],
+    totals_by_feature: [],
+    totals_by_language_feature: [],
+    totals_by_language_model: [],
+    totals_by_model_feature: [],
+    used_agent: false,
+    used_chat: true,
+    used_cli: false,
+    ...overrides,
+  });
+
+  describe('aggregateMetrics', () => {
+    it('should handle empty metrics array gracefully', () => {
+      const { aggregated } = aggregateMetrics([]);
+
+      expect(aggregated).toBeDefined();
+      expect(aggregated.stats.uniqueUsers).toBe(0);
+      expect(aggregated.stats.totalRecords).toBe(0);
+      expect(aggregated.userSummaries).toHaveLength(0);
+      expect(aggregated.engagementData).toHaveLength(0);
+    });
+
+    it('should extract report date range from first record', () => {
+      const metric1 = createBasicMetric({
+        report_start_day: '2024-01-01',
+        report_end_day: '2024-01-31',
+      });
+      const metric2 = createBasicMetric({
+        report_start_day: '2024-02-01', // Different dates
+        report_end_day: '2024-02-28',
+      });
+
+      const { aggregated } = aggregateMetrics([metric1, metric2]);
+
+      // Should use dates from first record
+      expect(aggregated.stats.reportStartDay).toBe('2024-01-01');
+      expect(aggregated.stats.reportEndDay).toBe('2024-01-31');
+    });
+
+    it('should aggregate multiple records for same user across days', () => {
+      const day1 = createBasicMetric({
+        user_id: 123,
+        user_login: 'testuser',
+        day: '2024-01-15',
+        loc_added_sum: 100,
+        loc_deleted_sum: 20,
+        user_initiated_interaction_count: 10,
+      });
+
+      const day2 = createBasicMetric({
+        user_id: 123,
+        user_login: 'testuser',
+        day: '2024-01-16',
+        loc_added_sum: 50,
+        loc_deleted_sum: 10,
+        user_initiated_interaction_count: 5,
+      });
+
+      const { aggregated } = aggregateMetrics([day1, day2]);
+
+      expect(aggregated.stats.uniqueUsers).toBe(1);
+      expect(aggregated.userSummaries).toHaveLength(1);
+
+      const userSummary = aggregated.userSummaries[0];
+      expect(userSummary.user_id).toBe(123);
+      expect(userSummary.total_loc_added).toBe(150); // 100 + 50
+      expect(userSummary.total_loc_deleted).toBe(30); // 20 + 10
+      expect(userSummary.total_user_initiated_interactions).toBe(15); // 10 + 5
+      expect(userSummary.days_active).toBe(2);
+    });
+
+    it('should track user feature flags correctly', () => {
+      const agentUser = createBasicMetric({
+        user_id: 1,
+        used_agent: true,
+        used_chat: false,
+        used_cli: false,
+      });
+
+      const chatUser = createBasicMetric({
+        user_id: 2,
+        used_agent: false,
+        used_chat: true,
+        used_cli: false,
+      });
+
+      const cliUser = createBasicMetric({
+        user_id: 3,
+        used_agent: false,
+        used_chat: false,
+        used_cli: true,
+      });
+
+      const { aggregated } = aggregateMetrics([agentUser, chatUser, cliUser]);
+
+      expect(aggregated.stats.uniqueUsers).toBe(3);
+      expect(aggregated.stats.agentUsers).toBe(1);
+      expect(aggregated.stats.chatUsers).toBe(1);
+      expect(aggregated.stats.cliUsers).toBe(1);
+
+      const summaries = aggregated.userSummaries;
+      expect(summaries.find(u => u.user_id === 1)?.used_agent).toBe(true);
+      expect(summaries.find(u => u.user_id === 2)?.used_chat).toBe(true);
+      expect(summaries.find(u => u.user_id === 3)?.used_cli).toBe(true);
+    });
+
+    it('should accumulate user flags across multiple days (OR logic)', () => {
+      // User uses chat on day 1, agent on day 2
+      const day1 = createBasicMetric({
+        user_id: 123,
+        day: '2024-01-15',
+        used_agent: false,
+        used_chat: true,
+        used_cli: false,
+      });
+
+      const day2 = createBasicMetric({
+        user_id: 123,
+        day: '2024-01-16',
+        used_agent: true,
+        used_chat: false,
+        used_cli: false,
+      });
+
+      const { aggregated } = aggregateMetrics([day1, day2]);
+
+      const userSummary = aggregated.userSummaries[0];
+      expect(userSummary.used_chat).toBe(true);
+      expect(userSummary.used_agent).toBe(true);
+      expect(userSummary.used_cli).toBe(false);
+    });
+
+    it('should create daily engagement data with unique users', () => {
+      const user1Day1 = createBasicMetric({
+        user_id: 1,
+        day: '2024-01-15',
+      });
+
+      const user2Day1 = createBasicMetric({
+        user_id: 2,
+        day: '2024-01-15',
+      });
+
+      const user1Day2 = createBasicMetric({
+        user_id: 1,
+        day: '2024-01-16',
+      });
+
+      const { aggregated } = aggregateMetrics([user1Day1, user2Day1, user1Day2]);
+
+      expect(aggregated.engagementData).toHaveLength(2);
+
+      const day1Data = aggregated.engagementData.find(d => d.date === '2024-01-15');
+      const day2Data = aggregated.engagementData.find(d => d.date === '2024-01-16');
+
+      expect(day1Data?.activeUsers).toBe(2);
+      expect(day2Data?.activeUsers).toBe(1);
+    });
+
+    it('should process IDE stats when provided', () => {
+      const metric = createBasicMetric({
+        totals_by_ide: [
+          {
+            ide: 'vscode',
+            user_initiated_interaction_count: 10,
+            code_generation_activity_count: 5,
+            code_acceptance_activity_count: 3,
+            loc_added_sum: 100,
+            loc_deleted_sum: 20,
+            loc_suggested_to_add_sum: 150,
+            loc_suggested_to_delete_sum: 30,
+          },
+        ],
+      });
+
+      const { aggregated } = aggregateMetrics([metric]);
+
+      expect(aggregated.ideStats).toBeDefined();
+      expect(aggregated.ideStats.length).toBeGreaterThan(0);
+    });
+
+    it('should process language stats when provided', () => {
+      const metric = createBasicMetric({
+        totals_by_language_feature: [
+          {
+            language: 'typescript',
+            feature: 'code_completion',
+            code_generation_activity_count: 10,
+            code_acceptance_activity_count: 5,
+            loc_added_sum: 100,
+            loc_deleted_sum: 20,
+            loc_suggested_to_add_sum: 150,
+            loc_suggested_to_delete_sum: 30,
+          },
+        ],
+      });
+
+      const { aggregated } = aggregateMetrics([metric]);
+
+      expect(aggregated.languageStats).toBeDefined();
+      expect(aggregated.languageStats.length).toBeGreaterThan(0);
+    });
+
+    it('should process model usage and PRU data when provided', () => {
+      const metric = createBasicMetric({
+        totals_by_model_feature: [
+          {
+            model: 'gpt-4o',
+            feature: 'code_completion',
+            user_initiated_interaction_count: 10,
+            code_generation_activity_count: 5,
+            code_acceptance_activity_count: 3,
+            loc_added_sum: 100,
+            loc_deleted_sum: 20,
+            loc_suggested_to_add_sum: 150,
+            loc_suggested_to_delete_sum: 30,
+          },
+        ],
+      });
+
+      const { aggregated } = aggregateMetrics([metric]);
+
+      expect(aggregated.modelUsageData).toBeDefined();
+      expect(aggregated.pruAnalysisData).toBeDefined();
+      expect(aggregated.modelFeatureDistributionData).toBeDefined();
+    });
+
+    it('should process feature adoption data when provided', () => {
+      const metric = createBasicMetric({
+        totals_by_feature: [
+          {
+            feature: 'code_completion',
+            user_initiated_interaction_count: 10,
+            code_generation_activity_count: 5,
+            code_acceptance_activity_count: 3,
+            loc_added_sum: 100,
+            loc_deleted_sum: 20,
+            loc_suggested_to_add_sum: 150,
+            loc_suggested_to_delete_sum: 30,
+          },
+        ],
+      });
+
+      const { aggregated } = aggregateMetrics([metric]);
+
+      expect(aggregated.featureAdoptionData).toBeDefined();
+      expect(aggregated.featureAdoptionData.totalUsers).toBeGreaterThan(0);
+    });
+
+    it('should process impact data when features have LOC', () => {
+      const metric = createBasicMetric({
+        totals_by_feature: [
+          {
+            feature: 'code_completion',
+            user_initiated_interaction_count: 10,
+            code_generation_activity_count: 5,
+            code_acceptance_activity_count: 3,
+            loc_added_sum: 100,
+            loc_deleted_sum: 20,
+            loc_suggested_to_add_sum: 150,
+            loc_suggested_to_delete_sum: 30,
+          },
+        ],
+      });
+
+      const { aggregated } = aggregateMetrics([metric]);
+
+      expect(aggregated.codeCompletionImpactData).toBeDefined();
+      expect(aggregated.agentImpactData).toBeDefined();
+      expect(aggregated.editModeImpactData).toBeDefined();
+    });
+  });
+});
