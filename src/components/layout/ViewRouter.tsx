@@ -31,7 +31,7 @@ const ViewRouter: React.FC = () => {
     currentView, selectedUser, selectedModel,
     navigateTo, selectUser, selectModel, clearSelectedModel, resetNavigation
   } = useNavigation();
-  const { handleFileUpload, handleSampleLoad, uploadProgress } = useFileUpload();
+  const { handleFileUpload, handleSampleLoad, handleAnalyze, stagedFiles, clearStagedFiles, uploadProgress } = useFileUpload();
   const { teamLookup } = useTeamLookup();
 
   const [userDetails, setUserDetails] = useState<UserDetailedMetrics | null>(null);
@@ -97,6 +97,9 @@ const ViewRouter: React.FC = () => {
       <FileUploadArea
         onFileUpload={handleFileUpload}
         onSampleLoad={handleSampleLoad}
+        onAnalyze={handleAnalyze}
+        stagedFiles={stagedFiles}
+        onClearStaged={clearStagedFiles}
         isLoading={isLoading}
         error={error}
         uploadProgress={uploadProgress}
