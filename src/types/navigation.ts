@@ -1,4 +1,4 @@
-import type { MetricsStats, UserSummary, IDEStatsData, PluginVersionAnalysisData, LanguageFeatureImpactData, DailyLanguageChartData, ModelBreakdownData } from './metrics';
+import type { MetricsStats, UserSummary, IDEStatsData, PluginVersionAnalysisData, LanguageFeatureImpactData, DailyLanguageChartData, ModelBreakdownData, TeamSummary } from './metrics';
 import type { UserDetailedMetrics } from '../types/aggregatedMetrics';
 import type {
   DailyEngagementData,
@@ -27,6 +27,7 @@ export const VIEW_MODES = {
   PRU_USAGE: 'pruUsage',
   COPILOT_ADOPTION: 'copilotAdoption',
   MODEL_DETAILS: 'modelDetails',
+  TEAMS: 'teams',
 } as const;
 
 export type ViewMode = typeof VIEW_MODES[keyof typeof VIEW_MODES];
@@ -147,6 +148,11 @@ export interface ModelDetailsViewProps extends BackNavigableViewProps {
   modelBreakdownData: ModelBreakdownData;
 }
 
+export interface TeamsViewProps extends BackNavigableViewProps {
+  view: typeof VIEW_MODES.TEAMS;
+  teams: TeamSummary[];
+}
+
 /**
  * Discriminated union of all view props.
  * Use this type when you need to pass props to a dynamic view router.
@@ -161,7 +167,8 @@ export type ViewProps =
   | CopilotImpactViewProps
   | PRUUsageViewProps
   | CopilotAdoptionViewProps
-  | ModelDetailsViewProps;
+  | ModelDetailsViewProps
+  | TeamsViewProps;
 
 /**
  * Type guard to check if props are for a specific view

@@ -3,11 +3,15 @@
 import React, { useState, useRef } from 'react';
 import PrivacyNotice from './PrivacyNotice';
 import HowToGetData from './HowToGetData';
+import TeamLookupUploadArea from './TeamLookupUploadArea';
 import { MultiFileProgress } from '../../../infra/metricsFileParser';
 
 interface FileUploadAreaProps {
   onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onSampleLoad: () => void;
+  onAnalyze: () => void;
+  stagedFiles: File[];
+  onClearStaged: () => void;
   isLoading: boolean;
   error: string | null;
   uploadProgress?: MultiFileProgress | null;
@@ -16,6 +20,9 @@ interface FileUploadAreaProps {
 const FileUploadArea: React.FC<FileUploadAreaProps> = ({
   onFileUpload,
   onSampleLoad,
+  onAnalyze,
+  stagedFiles,
+  onClearStaged,
   isLoading,
   error,
   uploadProgress,
@@ -53,6 +60,8 @@ const FileUploadArea: React.FC<FileUploadAreaProps> = ({
     }
   };
 
+  const hasStagedFiles = stagedFiles.length > 0;
+
   return (
     <div className="space-y-6">
       <PrivacyNotice />
@@ -64,7 +73,9 @@ const FileUploadArea: React.FC<FileUploadAreaProps> = ({
           className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
             isDragActive 
               ? 'border-blue-500 bg-blue-50' 
-              : 'border-gray-300 hover:border-gray-400'
+              : hasStagedFiles
+                ? 'border-green-400 bg-green-50'
+                : 'border-gray-300 hover:border-gray-400'
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -85,7 +96,7 @@ const FileUploadArea: React.FC<FileUploadAreaProps> = ({
             className="cursor-pointer flex flex-col items-center space-y-2"
           >
             <svg
-              className="w-12 h-12 text-gray-400"
+              className={`w-12 h-12 ${hasStagedFiles ? 'text-green-500' : 'text-gray-400'}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -98,18 +109,54 @@ const FileUploadArea: React.FC<FileUploadAreaProps> = ({
               />
             </svg>
             <span className="text-sm font-medium text-gray-700">
-              Click to upload or drag and drop
+              {hasStagedFiles ? 'Click to replace files or drag and drop' : 'Click to upload or drag and drop'}
             </span>
             <span className="text-xs text-gray-500">Accepted: .ndjson, .json (multiple files supported)</span>
           </label>
         </div>
+
+        {hasStagedFiles && !isLoading && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-sm font-medium text-green-800 mb-1">
+                  {stagedFiles.length} file{stagedFiles.length > 1 ? 's' : ''} ready to analyze
+                </p>
+                <ul className="text-sm text-green-700 space-y-0.5">
+                  {stagedFiles.map((f) => (
+                    <li key={f.name} className="flex items-center gap-1">
+                      <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {f.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <button
+                type="button"
+                onClick={onClearStaged}
+                className="text-xs text-green-600 hover:text-green-800 underline ml-2 flex-shrink-0"
+              >
+                Clear
+              </button>
+            </div>
+            <button
+              onClick={onAnalyze}
+              className="w-full px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition-colors"
+            >
+              Analyze
+            </button>
+          </div>
+        )}
+
         <div className="mt-4 text-center">
           <button
             onClick={onSampleLoad}
             disabled={isLoading}
             className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            Load Sample Report
+            Load Sample Data
           </button>
         </div>
         
@@ -141,6 +188,8 @@ const FileUploadArea: React.FC<FileUploadAreaProps> = ({
           </div>
         )}
       </div>
+
+      <TeamLookupUploadArea />
     </div>
   );
 };

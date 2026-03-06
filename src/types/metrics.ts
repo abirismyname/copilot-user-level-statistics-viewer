@@ -78,6 +78,7 @@ export interface CopilotMetrics {
 
 export interface MetricsStats {
   uniqueUsers: number;
+  uniqueTeams: number;
   chatUsers: number;
   agentUsers: number;
   cliUsers: number;
@@ -104,6 +105,23 @@ export interface UserSummary {
   used_agent: boolean;
   used_chat: boolean;
   used_cli: boolean;
+  team?: string;
+}
+
+export interface TeamSummary {
+  team_name: string;
+  user_count: number;
+  total_user_initiated_interactions: number;
+  total_code_generation_activities: number;
+  total_code_acceptance_activities: number;
+  total_loc_added: number;
+  total_loc_deleted: number;
+  total_loc_suggested_to_add: number;
+  total_loc_suggested_to_delete: number;
+  days_active: number;
+  chat_users: number;
+  agent_users: number;
+  cli_users: number;
 }
 
 // ==========================================
