@@ -16,8 +16,10 @@ interface OverviewDashboardProps {
   engagementData: DailyEngagementData[];
   chatUsersData: DailyChatUsersData[];
   chatRequestsData: DailyChatRequestsData[];
+  uniqueTeams: number;
   onNavigate: ValueCallback<ViewMode>;
   onModelSelect: ValueCallback<string>;
+  onNavigateToTeams: VoidCallback;
   onReset: VoidCallback;
 }
 
@@ -27,8 +29,10 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
   engagementData,
   chatUsersData,
   chatRequestsData,
+  uniqueTeams,
   onNavigate,
   onModelSelect,
+  onNavigateToTeams,
   onReset,
 }) => {
   const formatDate = (dateString: string) => {
@@ -83,6 +87,14 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             icon: <MetricTileIcon name="unique-users" />,
           },
           {
+            title: 'Unique Teams',
+            value: uniqueTeams,
+            accent: 'teal',
+            interactive: true,
+            onClick: onNavigateToTeams,
+            icon: <MetricTileIcon name="unique-teams" />,
+          },
+          {
             title: 'Top Language',
             value: stats.topLanguage?.name || 'N/A',
             subtitle: `${stats.topLanguage?.engagements?.toLocaleString() || '0'} engagements`,
@@ -103,7 +115,7 @@ const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             icon: <MetricTileIcon name="top-ide" />,
           },
         ]}
-        columns={{ base: 1, md: 2, lg: 4 }}
+        columns={{ base: 1, md: 2, lg: 5 }}
       />
 
       <MetricTileGroup

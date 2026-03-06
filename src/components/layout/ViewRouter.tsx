@@ -6,10 +6,13 @@ import type { UserDetailedMetrics } from '../../types/aggregatedMetrics';
 import { useNavigation } from '../../state/NavigationContext';
 import { useMetrics } from '../MetricsContext';
 import { useFileUpload } from '../../hooks/useFileUpload';
+import { useTeamLookup } from '../TeamLookupContext';
 import { terminateWorker, computeUserDetailsInWorker } from '../../workers/metricsWorkerClient';
+import { computeTeamSummaries } from '../../utils/teamSummaryUtils';
 import { FileUploadArea } from '../features/file-upload';
 import { OverviewDashboard } from '../features/overview';
 import UniqueUsersView from '../UniqueUsersView';
+import UniqueTeamsView from '../UniqueTeamsView';
 import UserDetailsView from '../UserDetailsView';
 import LanguagesView from '../LanguagesView';
 import IDEView from '../IDEView';
@@ -29,6 +32,7 @@ const ViewRouter: React.FC = () => {
     navigateTo, selectUser, selectModel, clearSelectedModel, resetNavigation
   } = useNavigation();
   const { handleFileUpload, handleSampleLoad, uploadProgress } = useFileUpload();
+  const { teamLookup } = useTeamLookup();
 
   const [userDetails, setUserDetails] = useState<UserDetailedMetrics | null>(null);
   const [userDetailsLoading, setUserDetailsLoading] = useState(false);
@@ -113,7 +117,7 @@ const ViewRouter: React.FC = () => {
 
   const { 
     stats, 
-    userSummaries, 
+    userSummaries: rawUserSummaries, 
     engagementData, 
     chatUsersData, 
     chatRequestsData, 
@@ -140,6 +144,14 @@ const ViewRouter: React.FC = () => {
     dailyLanguageLocData,
     modelBreakdownData,
   } = aggregatedMetrics;
+
+  const userSummaries = rawUserSummaries.map((u) => ({
+    ...u,
+    team: teamLookup.get(u.user_login),
+  }));
+
+  const teamSummaries = computeTeamSummaries(userSummaries);
+  const uniqueTeams = new Set(userSummaries.map((u) => u.team).filter(Boolean)).size;
 
   switch (currentView) {
     case VIEW_MODES.EXECUTIVE_SUMMARY:
@@ -269,6 +281,14 @@ const ViewRouter: React.FC = () => {
         />
       );
 
+    case VIEW_MODES.TEAMS:
+      return (
+        <UniqueTeamsView
+          teams={teamSummaries}
+          onBack={() => navigateTo(VIEW_MODES.OVERVIEW)}
+        />
+      );
+
     case VIEW_MODES.OVERVIEW:
     default:
       return (
@@ -278,8 +298,10 @@ const ViewRouter: React.FC = () => {
           engagementData={engagementData}
           chatUsersData={chatUsersData}
           chatRequestsData={chatRequestsData}
+          uniqueTeams={uniqueTeams}
           onNavigate={navigateTo}
           onModelSelect={selectModel}
+          onNavigateToTeams={() => navigateTo(VIEW_MODES.TEAMS)}
           onReset={resetData}
         />
       );

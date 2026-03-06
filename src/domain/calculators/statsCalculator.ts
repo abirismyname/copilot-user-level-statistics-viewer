@@ -108,6 +108,7 @@ export function computeStats(
 
   return {
     uniqueUsers: accumulator.userUsageMap.size,
+    uniqueTeams: 0,
     chatUsers: chatUsersCount,
     agentUsers: agentUsersCount,
     cliUsers: cliUsersCount,
@@ -128,6 +129,7 @@ export function calculateStatsFromMetrics(
   if (metrics.length === 0) {
     return {
       uniqueUsers: 0,
+      uniqueTeams: 0,
       chatUsers: 0,
       agentUsers: 0,
       cliUsers: 0,

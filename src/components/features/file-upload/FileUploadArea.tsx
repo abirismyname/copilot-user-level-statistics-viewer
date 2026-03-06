@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import PrivacyNotice from './PrivacyNotice';
 import HowToGetData from './HowToGetData';
+import TeamLookupUploadArea from './TeamLookupUploadArea';
 import { MultiFileProgress } from '../../../infra/metricsFileParser';
 
 interface FileUploadAreaProps {
@@ -141,6 +142,8 @@ const FileUploadArea: React.FC<FileUploadAreaProps> = ({
           </div>
         )}
       </div>
+
+      <TeamLookupUploadArea />
     </div>
   );
 };

@@ -13,7 +13,7 @@ interface UniqueUsersViewProps {
   onUserClick: (userLogin: string, userId: number) => void;
 }
 
-type SortField = 'user_login' | 'total_user_initiated_interactions' | 'total_code_generation_activities' | 'total_code_acceptance_activities' | 'days_active' | 'total_loc_added' | 'total_loc_deleted' | 'total_loc_suggested_to_add' | 'total_loc_suggested_to_delete';
+type SortField = 'user_login' | 'team' | 'total_user_initiated_interactions' | 'total_code_generation_activities' | 'total_code_acceptance_activities' | 'days_active' | 'total_loc_added' | 'total_loc_deleted' | 'total_loc_suggested_to_add' | 'total_loc_suggested_to_delete';
 
 export default function UniqueUsersView({ users, onBack, onUserClick }: UniqueUsersViewProps) {
   const { searchQuery, setSearchQuery, filteredUsers } = useUsernameTrieSearch(users);
@@ -53,6 +53,18 @@ export default function UniqueUsersView({ users, onBack, onUserClick }: UniqueUs
             <div className="text-sm text-gray-500">ID: {user.user_id}</div>
           </div>
         </div>
+      ),
+    },
+    {
+      id: 'team',
+      header: 'Team',
+      sortable: true,
+      headerClassName: `${headerBaseClass} w-1/8`,
+      className: 'px-6 py-4 whitespace-nowrap text-sm',
+      renderCell: (user) => (
+        user.team
+          ? <span className="text-gray-900">{user.team}</span>
+          : <span className="text-gray-400">&mdash;</span>
       ),
     },
     {

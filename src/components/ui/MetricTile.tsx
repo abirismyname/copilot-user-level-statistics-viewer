@@ -13,6 +13,7 @@ function cn(...classes: Array<string | false | null | undefined>): string {
 export type AccentColor =
   | 'green'
   | 'emerald'
+  | 'teal'
   | 'violet'
   | 'amber'
   | 'blue'
@@ -55,6 +56,17 @@ const COLOR_VARIANTS: Record<AccentColor, VariantClasses> = {
     ring: 'focus-visible:ring-emerald-500',
     arrow: 'text-emerald-500',
     arrowHover: 'group-hover:text-emerald-600'
+  },
+  teal: {
+    container: 'bg-teal-50 border-teal-200',
+    title: 'text-teal-600 group-hover:text-teal-700',
+    value: 'text-teal-900',
+    subtitle: 'text-teal-700',
+    icon: 'text-teal-600',
+    hover: 'hover:bg-teal-100',
+    ring: 'focus-visible:ring-teal-500',
+    arrow: 'text-teal-500',
+    arrowHover: 'group-hover:text-teal-600'
   },
   violet: {
     container: 'bg-violet-50 border-violet-200',
