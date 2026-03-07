@@ -47,7 +47,7 @@ const TeamLookupUploadArea: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div>
       <h2 className="text-xl font-semibold text-gray-900 mb-1">Upload Teams Lookup (Optional)</h2>
       <p className="text-sm text-gray-500 mb-4">
         CSV with columns <code className="font-mono bg-gray-100 px-1 rounded">login</code> and{' '}
