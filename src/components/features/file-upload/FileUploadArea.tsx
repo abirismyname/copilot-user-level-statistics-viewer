@@ -68,6 +68,16 @@ const FileUploadArea: React.FC<FileUploadAreaProps> = ({
       <HowToGetData />
 
       <div className="bg-gray-50 rounded-lg border border-gray-200 p-6 space-y-6">
+        <div className="text-center">
+          <button
+            onClick={onSampleLoad}
+            disabled={isLoading}
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          >
+            Load Sample Data
+          </button>
+        </div>
+
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Metrics File</h2>
           <div 
@@ -116,41 +126,6 @@ const FileUploadArea: React.FC<FileUploadAreaProps> = ({
             </label>
           </div>
 
-          {hasStagedFiles && !isLoading && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="text-sm font-medium text-green-800 mb-1">
-                    {stagedFiles.length} file{stagedFiles.length > 1 ? 's' : ''} ready to analyze
-                  </p>
-                  <ul className="text-sm text-green-700 space-y-0.5">
-                    {stagedFiles.map((f) => (
-                      <li key={f.name} className="flex items-center gap-1">
-                        <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        {f.name}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <button
-                  type="button"
-                  onClick={onClearStaged}
-                  className="text-xs text-green-600 hover:text-green-800 underline ml-2 flex-shrink-0"
-                >
-                  Clear
-                </button>
-              </div>
-              <button
-                onClick={onAnalyze}
-                className="w-full px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition-colors"
-              >
-                Analyze
-              </button>
-            </div>
-          )}
-
           {isLoading && (
             <div className="mt-4 text-center">
               <div className="inline-flex flex-col items-center space-y-2">
@@ -182,15 +157,40 @@ const FileUploadArea: React.FC<FileUploadAreaProps> = ({
 
         <TeamLookupUploadArea />
 
-        <div className="text-center">
-          <button
-            onClick={onSampleLoad}
-            disabled={isLoading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-          >
-            Load Sample Data
-          </button>
-        </div>
+        {hasStagedFiles && !isLoading && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-md">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-sm font-medium text-green-800 mb-1">
+                  {stagedFiles.length} file{stagedFiles.length > 1 ? 's' : ''} ready to analyze
+                </p>
+                <ul className="text-sm text-green-700 space-y-0.5">
+                  {stagedFiles.map((f) => (
+                    <li key={f.name} className="flex items-center gap-1">
+                      <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {f.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <button
+                type="button"
+                onClick={onClearStaged}
+                className="text-xs text-green-600 hover:text-green-800 underline ml-2 flex-shrink-0"
+              >
+                Clear
+              </button>
+            </div>
+            <button
+              onClick={onAnalyze}
+              className="w-full px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition-colors"
+            >
+              Analyze
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
