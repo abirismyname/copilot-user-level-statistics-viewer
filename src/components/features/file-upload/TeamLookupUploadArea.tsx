@@ -77,46 +77,6 @@ const TeamLookupUploadArea: React.FC = () => {
         CSV with columns <code className="font-mono bg-gray-100 px-1 rounded">login</code> and{' '}
         <code className="font-mono bg-gray-100 px-1 rounded">enterprise_team_name</code> to map users to teams.
       </p>
-      <details className="mb-4 text-sm text-gray-600 border border-gray-200 rounded-lg">
-        <summary className="cursor-pointer px-4 py-2 font-medium text-gray-700 hover:bg-gray-50 rounded-lg select-none">
-          How to generate the Teams Lookup CSV
-        </summary>
-        <div className="px-4 pb-4 pt-2 space-y-2 border-t border-gray-200">
-          <p>
-            Use the{' '}
-            <a
-              href="https://gist.github.com/abirismyname/fb54c990abb04c73c1f4c00061cc37dd"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 underline"
-            >
-              enterprise-team-members
-            </a>{' '}
-            GitHub CLI script to generate a CSV mapping enterprise users to their teams:
-          </p>
-          <pre className="bg-gray-100 rounded p-3 text-xs overflow-x-auto whitespace-pre">
-{`# Download the script
-gh gist view fb54c990abb04c73c1f4c00061cc37dd --raw > enterprise-team-members.sh
-chmod +x enterprise-team-members.sh
-
-# Run it (requires admin:enterprise token scope)
-./enterprise-team-members.sh YOUR_ENTERPRISE_SLUG`}
-          </pre>
-          <p>
-            This produces an <code className="font-mono bg-gray-100 px-1 rounded">enterprise_team_members.csv</code> file
-            with columns <code className="font-mono bg-gray-100 px-1 rounded">login</code>,{' '}
-            <code className="font-mono bg-gray-100 px-1 rounded">enterprise_team_slug</code>, and{' '}
-            <code className="font-mono bg-gray-100 px-1 rounded">enterprise_team_name</code>.
-          </p>
-          <p className="text-gray-500">
-            <strong>Note:</strong> Your GitHub token needs the{' '}
-            <code className="font-mono bg-gray-100 px-1 rounded">admin:enterprise</code> scope. Run{' '}
-            <code className="font-mono bg-gray-100 px-1 rounded">gh auth refresh -h github.com -s admin:enterprise</code>{' '}
-            if needed.
-          </p>
-        </div>
-      </details>
-
       <div
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
           isDragActive
